@@ -29,28 +29,35 @@ FRAMES_PER_FFT = 16 # FFT takes average across how many frames?
 # resolution increases); however, it will incur more delay to process
 # new sounds.
 
-SAMPLES_PER_FFT = FRAME_SIZE*FRAMES_PER_FFT
-FREQ_STEP = float(FSAMP)/SAMPLES_PER_FFT
+SAMPLES_PER_FFT = FRAME_SIZE * FRAMES_PER_FFT
+FREQ_STEP = float(FSAMP) / SAMPLES_PER_FFT
 
 ######################################################################
 # For printing out notes
 
-NOTE_NAMES = 'C C# D D# E F F# G G# A A# B'.split()
+NOTE_NAMES = "C C# D D# E F F# G G# A A# B".split()
 
 ######################################################################
 # These three functions are based upon this very useful webpage:
 # https://newt.phys.unsw.edu.au/jw/notes.html
 
-def freq_to_number(f): return 69 + 12*np.log2(f/440.0)
-def number_to_freq(n): return 440 * 2.0**((n-69)/12.0)
-def note_name(n): return NOTE_NAMES[n % 12] + str(n/12 - 1)
+def freq_to_number(f): 
+    return 69 + 12*np.log2(f/440.0)
+
+def number_to_freq(n): 
+    return 440 * 2.0**((n-69)/12.0)
+
+def note_name(n): 
+    return NOTE_NAMES[n % 12] + str(n/12 - 1)
 
 ######################################################################
 # Ok, ready to go now.
 
 # Get min/max index within FFT of notes we care about.
 # See docs for numpy.rfftfreq()
-def note_to_fftbin(n): return number_to_freq(n)/FREQ_STEP
+def note_to_fftbin(n): 
+    return number_to_freq(n)/FREQ_STEP
+
 imin = max(0, int(np.floor(note_to_fftbin(NOTE_MIN-1))))
 imax = min(SAMPLES_PER_FFT, int(np.ceil(note_to_fftbin(NOTE_MAX+1))))
 
@@ -68,11 +75,10 @@ stream = pyaudio.PyAudio().open(format=pyaudio.paInt16,
 stream.start_stream()
 
 # Create Hanning window function
-window = 0.5 * (1 - np.cos(np.linspace(0, 2*np.pi, SAMPLES_PER_FFT, False)))
+window = 0.5 * (1 - np.cos(np.linspace(0, 2 * np.pi, SAMPLES_PER_FFT, False)))
 
 # Print initial text
-print 'sampling at', FSAMP, 'Hz with max resolution of', FREQ_STEP, 'Hz'
-print
+print("Sampling at", FSAMP, "Hz with max resolution of", FREQ_STEP, "Hz")
 
 # As long as we are getting data:
 while stream.is_active():
@@ -95,5 +101,5 @@ while stream.is_active():
     num_frames += 1
 
     if num_frames >= FRAMES_PER_FFT:
-        print 'freq: {:7.2f} Hz     note: {:>3s} {:+.2f}'.format(
-            freq, note_name(n0), n-n0)
+        print("freq: {:7.2f} Hz     note: {:>3s} {:+.2f}".format(
+            freq, note_name(n0), n-n0))
